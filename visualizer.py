@@ -31,31 +31,59 @@ import sys
 from typing import List, Tuple, Set, Callable
 
 # ---- ANSI codes ----
-RESET  = "\033[0m"
-BOLD   = "\033[1m"
-WHITE  = "\033[97m"
-CYAN   = "\033[96m"
-GREEN  = "\033[92m"
-RED    = "\033[91m"
+RESET = "\033[0m"
+BOLD = "\033[1m"
+WHITE = "\033[97m"
+CYAN = "\033[96m"
+GREEN = "\033[92m"
+RED = "\033[91m"
 YELLOW = "\033[93m"
-BLUE   = "\033[34m"
+BLUE = "\033[34m"
 
 # ---- 4 colour schemes to cycle through ----
 # Each scheme is a dict with keys: wall, path, entry, exit, pattern
 SCHEMES = [
-    {"name": "White",  "wall": WHITE,  "path": CYAN,   "entry": GREEN, "exit": RED, "pattern": YELLOW},
-    {"name": "Yellow", "wall": YELLOW, "path": CYAN,   "entry": GREEN, "exit": RED, "pattern": WHITE},
-    {"name": "Blue",   "wall": BLUE,   "path": CYAN,   "entry": GREEN, "exit": RED, "pattern": YELLOW},
-    {"name": "Green",  "wall": GREEN,  "path": YELLOW, "entry": CYAN,  "exit": RED, "pattern": WHITE},
+    {
+        "name": "White",
+        "wall": WHITE,
+        "path": CYAN,
+        "entry": GREEN,
+        "exit": RED,
+        "pattern": YELLOW,
+    },
+    {
+        "name": "Yellow",
+        "wall": YELLOW,
+        "path": CYAN,
+        "entry": GREEN,
+        "exit": RED,
+        "pattern": WHITE,
+    },
+    {
+        "name": "Blue",
+        "wall": BLUE,
+        "path": CYAN,
+        "entry": GREEN,
+        "exit": RED,
+        "pattern": YELLOW,
+    },
+    {
+        "name": "Green",
+        "wall": GREEN,
+        "path": YELLOW,
+        "entry": CYAN,
+        "exit": RED,
+        "pattern": WHITE,
+    },
 ]
 
 # ---- Drawing characters ----
-WALL_H  = "██"   # horizontal wall  (2 chars wide)
-WALL_V  = "█"    # vertical wall    (1 char wide)
-CORNER  = "█"    # corner           (1 char)
-FLOOR   = "  "   # empty cell       (2 chars)
-PATH    = "··"   # solution path    (2 chars)
-PATTERN = "██"   # '42' solid cell  (2 chars)
+WALL_H = "██"  # horizontal wall  (2 chars wide)
+WALL_V = "█"  # vertical wall    (1 char wide)
+CORNER = "█"  # corner           (1 char)
+FLOOR = "  "  # empty cell       (2 chars)
+PATH = "··"  # solution path    (2 chars)
+PATTERN = "██"  # '42' solid cell  (2 chars)
 
 
 class MazeVisualizer:
@@ -76,23 +104,23 @@ class MazeVisualizer:
 
     def __init__(
         self,
-        grid:          List[List[int]],
-        width:         int,
-        height:        int,
-        entry:         Tuple[int, int],
-        exit_coord:    Tuple[int, int],
-        solution:      List[str],
+        grid: List[List[int]],
+        width: int,
+        height: int,
+        entry: Tuple[int, int],
+        exit_coord: Tuple[int, int],
+        solution: List[str],
         pattern_cells: Set[Tuple[int, int]],
     ) -> None:
-        self.grid          = grid
-        self.width         = width
-        self.height        = height
-        self.entry         = entry
-        self.exit_coord    = exit_coord
-        self.solution      = solution
+        self.grid = grid
+        self.width = width
+        self.height = height
+        self.entry = entry
+        self.exit_coord = exit_coord
+        self.solution = solution
         self.pattern_cells = pattern_cells
-        self.color_idx     = 0
-        self.show_path     = False
+        self.color_idx = 0
+        self.show_path = False
 
     # ----------------------------------------------------------------
     # Public methods (called from the interactive loop)
@@ -100,9 +128,9 @@ class MazeVisualizer:
 
     def render(self) -> None:
         """Clear the screen and draw the full maze."""
-        print("\033[2J\033[H", end="")   # clear terminal, cursor to top-left
-        scheme    = SCHEMES[self.color_idx]
-        path_set  = self._compute_path_cells() if self.show_path else set()
+        print("\033[2J\033[H", end="")  # clear terminal, cursor to top-left
+        scheme = SCHEMES[self.color_idx]
+        path_set = self._compute_path_cells() if self.show_path else set()
 
         for row in range(self.height):
             self._draw_top_border(row, scheme)
@@ -119,13 +147,13 @@ class MazeVisualizer:
 
     def print_menu(self) -> None:
         """Print the interactive menu below the maze."""
-        path_status   = "ON" if self.show_path else "OFF"
-        scheme_name   = SCHEMES[self.color_idx]["name"]
+        path_status = "ON" if self.show_path else "OFF"
+        scheme_name = SCHEMES[self.color_idx]["name"]
         print(f"\n{BOLD}==== A-Maze-ing ===={RESET}")
-        print(f"  1. Re-generate a new maze")
+        print("  1. Re-generate a new maze")
         print(f"  2. Show / Hide solution path  (currently: {path_status})")
         print(f"  3. Change wall colour         (currently: {scheme_name})")
-        print(f"  4. Quit")
+        print("  4. Quit")
         print("Choice (1-4): ", end="", flush=True)
 
     # ----------------------------------------------------------------
@@ -138,7 +166,7 @@ class MazeVisualizer:
         Collect every (row, col) along the way.
         Returns a set so we can check membership in O(1) while drawing.
         """
-        move = {'N': (-1, 0), 'E': (0, 1), 'S': (1, 0), 'W': (0, -1)}
+        move = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
         ec, er = self.entry
         r, c = er, ec
         cells: Set[Tuple[int, int]] = {(r, c)}
@@ -154,7 +182,8 @@ class MazeVisualizer:
     # ----------------------------------------------------------------
 
     def _has_wall(self, row: int, col: int, bit: int) -> bool:
-        """Return True if the wall at `bit` position is closed for cell (row,col)."""
+        """Return True if the wall at `bit`
+        position is closed for cell (row,col)."""
         return bool(self.grid[row][col] & (1 << bit))
 
     def _draw_top_border(self, row: int, scheme: dict) -> None:
@@ -164,11 +193,11 @@ class MazeVisualizer:
         depending on whether the North wall (bit 0) is closed.
         End with a final CORNER.
         """
-        w    = scheme["wall"]
+        w = scheme["wall"]
         line = ""
         for col in range(self.width):
             line += w + CORNER + RESET
-            if self._has_wall(row, col, 0):     # bit 0 = North
+            if self._has_wall(row, col, 0):  # bit 0 = North
                 line += w + WALL_H + RESET
             else:
                 line += "  "
@@ -177,16 +206,17 @@ class MazeVisualizer:
 
     def _draw_cell_row(
         self,
-        row:      int,
-        scheme:   dict,
+        row: int,
+        scheme: dict,
         path_set: Set[Tuple[int, int]],
     ) -> None:
         """
         Draw the content line of a row.
-        For each cell: print the West wall (bit 3) if closed, then the cell content.
+        For each cell: print the West wall (bit 3)
+        if closed, then the cell content.
         After the last cell, close the East wall (bit 1) of that cell.
         """
-        w  = scheme["wall"]
+        w = scheme["wall"]
         ec, er = self.entry
         xc, xr = self.exit_coord
         line = ""
@@ -228,12 +258,12 @@ class MazeVisualizer:
         Draw the very last border line (South walls of the bottom row, bit 2).
         Same structure as _draw_top_border but checks South wall.
         """
-        w    = scheme["wall"]
+        w = scheme["wall"]
         last = self.height - 1
         line = ""
         for col in range(self.width):
             line += w + CORNER + RESET
-            if self._has_wall(last, col, 2):    # bit 2 = South
+            if self._has_wall(last, col, 2):  # bit 2 = South
                 line += w + WALL_H + RESET
             else:
                 line += "  "
@@ -245,9 +275,10 @@ class MazeVisualizer:
 # Interactive loop (called from a_maze_ing.py)
 # ----------------------------------------------------------------
 
+
 def run_interactive_loop(
-    viz:          MazeVisualizer,
-    regenerate:   Callable[[], MazeVisualizer],
+    viz: MazeVisualizer,
+    regenerate: Callable[[], MazeVisualizer],
 ) -> None:
     """
     Show the maze and the menu. Wait for user input in a loop.
@@ -268,22 +299,22 @@ def run_interactive_loop(
             print(f"\n{GREEN}Goodbye!{RESET}")
             sys.exit(0)
 
-        if choice == '1':
+        if choice == "1":
             viz = regenerate()
             viz.render()
             viz.print_menu()
 
-        elif choice == '2':
+        elif choice == "2":
             viz.toggle_path()
             viz.render()
             viz.print_menu()
 
-        elif choice == '3':
+        elif choice == "3":
             viz.next_color()
             viz.render()
             viz.print_menu()
 
-        elif choice == '4':
+        elif choice == "4":
             print(f"\n{GREEN}Goodbye!{RESET}")
             sys.exit(0)
 

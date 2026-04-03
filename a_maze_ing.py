@@ -34,9 +34,11 @@ def build_maze(config: MazeConfig) -> MazeGenerator:
     Returns:
         A MazeGenerator object whose .grid, .solution, etc. are all filled.
     """
-    seed = config.seed if config.seed is not None else random.randint(0, 2 ** 31)
+    seed = (
+        config.seed if config.seed is not None else random.randint(0, 2**31)
+    )
 
-    gen = MazeGenerator(width=config.width, height=config.height, seed=seed)
+    gen = MazeGenerator(w=config.width, h=config.height, seed=seed)
     gen.generate(
         perfect=config.perfect,
         entry=config.entry,
@@ -75,8 +77,7 @@ def make_visualizer(gen: MazeGenerator, config: MazeConfig) -> MazeVisualizer:
 
     if not gen.solution:
         print(
-            "Warning: no solution path found. "
-            "The maze may be invalid.",
+            "Warning: no solution path found. " "The maze may be invalid.",
             file=sys.stderr,
         )
 
@@ -119,8 +120,10 @@ def main() -> None:
         sys.exit(1)
 
     # ---- 5. Interactive display ----
-    # 'regenerate' is the callback the visualizer calls when the user presses 1.
-    # It creates a brand-new maze (with a new random seed) and returns a new viz.
+    # 'regenerate' is the callback the visualizer
+    # calls when the user presses 1.
+    # It creates a brand-new maze (with a new random seed)
+    # and returns a new viz.
     def regenerate() -> MazeVisualizer:
         """Generate a new random maze and return a fresh MazeVisualizer."""
         try:
@@ -131,17 +134,19 @@ def main() -> None:
                 exit_coord=config.exit_coord,
                 output_file=config.output_file,
                 perfect=config.perfect,
-                seed=None,           # None = pick a new random seed
+                seed=None,  # None = pick a new random seed
                 algorithm=config.algorithm,
             )
             new_gen = build_maze(new_config)
             new_viz = make_visualizer(new_gen, new_config)
-            new_viz.color_idx  = viz.color_idx    # keep the colour the user chose
-            new_viz.show_path  = viz.show_path    # keep path visibility
+            new_viz.color_idx = (
+                viz.color_idx
+            )  # keep the colour the user chose
+            new_viz.show_path = viz.show_path  # keep path visibility
             return new_viz
         except Exception as err:
             print(f"\nError during regeneration: {err}", file=sys.stderr)
-            return viz   # on error, keep showing the current maze
+            return viz  # on error, keep showing the current maze
 
     run_interactive_loop(viz, regenerate)
 

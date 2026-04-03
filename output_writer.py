@@ -18,18 +18,19 @@ from typing import List, Tuple
 
 
 def write_output(
-    filepath:   str,
-    hex_rows:   List[str],
-    entry:      Tuple[int, int],
+    filepath: str,
+    hex_rows: List[str],
+    entry: Tuple[int, int],
     exit_coord: Tuple[int, int],
-    solution:   List[str],
+    solution: List[str],
 ) -> None:
     """
     Write the maze file.
 
     Args:
         filepath   : path of the file to create / overwrite
-        hex_rows   : list of strings, one per maze row (from MazeGenerator.to_hex_grid)
+        hex_rows   : list of strings, one per maze row
+                     (from MazeGenerator.to_hex_grid)
         entry      : (col, row) of the entrance
         exit_coord : (col, row) of the exit
         solution   : list of 'N'/'E'/'S'/'W' direction letters (shortest path)
@@ -39,17 +40,17 @@ def write_output(
     """
     ec, er = entry
     xc, xr = exit_coord
-    path_str = ''.join(solution)
+    path_str = "".join(solution)
 
-    with open(filepath, 'w') as fh:
+    with open(filepath, "w") as fh:
         # hex grid
         for row in hex_rows:
-            fh.write(row + '\n')
+            fh.write(row + "\n")
 
         # empty separator line
-        fh.write('\n')
+        fh.write("\n")
 
         # entry, exit, solution
         fh.write(f"{ec},{er}\n")
         fh.write(f"{xc},{xr}\n")
-        fh.write(path_str + '\n')
+        fh.write(path_str + "\n")
