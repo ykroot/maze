@@ -7,7 +7,7 @@ HEIGHT=10
 ENTRY=0,0
 EXIT=12,9
 OUTPUT_FILE=maze.txt
-PERFECT=false
+PERFECT=True
 
 # Uncomment the line below to always get the same maze (reproducible).
 # SEED=42

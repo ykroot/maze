@@ -30,7 +30,7 @@ Example: \033[92m Hello \033[0m   →  prints "Hello" in bright green
 import sys
 from typing import List, Tuple, Set, Callable
 
-# ---- ANSI codes ----
+#  ANSI codes
 RESET = "\033[0m"
 BOLD = "\033[1m"
 WHITE = "\033[97m"
@@ -109,7 +109,7 @@ class MazeVisualizer:
         height: int,
         entry: Tuple[int, int],
         exit_coord: Tuple[int, int],
-        solution: List[str],
+        solution: str,
         pattern_cells: Set[Tuple[int, int]],
     ) -> None:
         self.grid = grid

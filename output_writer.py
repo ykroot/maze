@@ -22,7 +22,7 @@ def write_output(
     hex_rows: List[str],
     entry: Tuple[int, int],
     exit_coord: Tuple[int, int],
-    solution: List[str],
+    solution: str,
 ) -> None:
     """
     Write the maze file.
