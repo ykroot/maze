@@ -96,12 +96,12 @@ def main() -> None:
     """
     Entry point: parse arguments, generate maze, display it.
     """
-    # ---- 1. Argument check ----
+    #  Argument check
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py <config_file>", file=sys.stderr)
         sys.exit(1)
 
-    # ---- 2. Parse config ----
+    #  Parse config
     try:
         config = parse_config(sys.argv[1])
     except FileNotFoundError as err:
@@ -111,7 +111,7 @@ def main() -> None:
         print(f"Config error: {err}", file=sys.stderr)
         sys.exit(1)
 
-    # ---- 3 & 4. Generate + save ----
+    #  Generate + save
     try:
         gen = build_maze(config)
         viz = make_visualizer(gen, config)
@@ -119,11 +119,11 @@ def main() -> None:
         print(f"Error: {err}", file=sys.stderr)
         sys.exit(1)
 
-    # ---- 5. Interactive display ----
-    # 'regenerate' is the callback the visualizer
+    # 'regenerate' is the callback to the visualizer
     # calls when the user presses 1.
     # It creates a brand-new maze (with a new random seed)
     # and returns a new viz.
+
     def regenerate() -> MazeVisualizer:
         """Generate a new random maze and return a fresh MazeVisualizer."""
         try:

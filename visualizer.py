@@ -122,8 +122,6 @@ class MazeVisualizer:
         self.color_idx = 0
         self.show_path = False
 
-    # (called from the interactive loop)
-
     def render(self) -> None:
         """Clear the screen and draw the full maze."""
         print("\033[2J\033[H", end="")  # clear terminal, cursor to top-left
@@ -166,7 +164,7 @@ class MazeVisualizer:
         move = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
         ec, er = self.entry
         r, c = er, ec
-        cells: Set[Tuple[int, int]] = {(r, c)}
+        cells = {(r, c)}
         for direction in self.solution:
             dr, dc = move[direction]
             r += dr
@@ -174,16 +172,14 @@ class MazeVisualizer:
             cells.add((r, c))
         return cells
 
-    # ----------------------------------------------------------------
     # Private: row-drawing helpers
-    # ----------------------------------------------------------------
 
     def _has_wall(self, row: int, col: int, bit: int) -> bool:
         """Return True if the wall at `bit`
         position is closed for cell (row,col)."""
         return bool(self.grid[row][col] & (1 << bit))
 
-    def _draw_top_border(self, row: int, scheme: dict) -> None:
+    def _draw_top_border(self, row: int, scheme: dict[str, str]) -> None:
         """
         Draw the top border line of a row.
         For each cell: print a CORNER, then either WALL_H or two spaces
@@ -204,7 +200,7 @@ class MazeVisualizer:
     def _draw_cell_row(
         self,
         row: int,
-        scheme: dict,
+        scheme: dict[str, str],
         path_set: Set[Tuple[int, int]],
     ) -> None:
         """
@@ -250,7 +246,7 @@ class MazeVisualizer:
 
         print(line)
 
-    def _draw_bottom_border(self, scheme: dict) -> None:
+    def _draw_bottom_border(self, scheme: dict[str, str]) -> None:
         """
         Draw the very last border line (South walls of the bottom row, bit 2).
         Same structure as _draw_top_border but checks South wall.
@@ -268,10 +264,7 @@ class MazeVisualizer:
         print(line)
 
 
-# ----------------------------------------------------------------
 # Interactive loop (called from a_maze_ing.py)
-# ----------------------------------------------------------------
-
 
 def run_interactive_loop(
     viz: MazeVisualizer,
