@@ -69,7 +69,6 @@ def parse_config(filepath: str) -> MazeConfig:
                     f"Line {lineno}: expected 'KEY=VALUE', got: '{line}'"
                 )
 
-            # Split on the FIRST '=' only (value might contain '=')
             key, _, value = line.partition("=")
             data[key.strip().upper()] = value.strip()
 
@@ -93,12 +92,10 @@ def parse_config(filepath: str) -> MazeConfig:
 
     perfect = boolean(data["PERFECT"], "PERFECT")
 
-    # Optional: SEED
     seed: Optional[int] = None
     if "SEED" in data:
         seed = positive_int(data["SEED"], "SEED", allow_zero=True)
 
-    # Optional: ALGORITHM  (only 'wilson' supported for now)
     algorithm = data.get("ALGORITHM", "wilson").lower()
     if algorithm != "wilson":
         raise ValueError(f"ALGORITHM must be 'wilson', got: '{algorithm}'")

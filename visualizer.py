@@ -77,14 +77,13 @@ SCHEMES = [
     },
 ]
 
-# ---- Drawing characters ----
+#  Drawing characters
 WALL_H = "██"  # horizontal wall  (2 chars wide)
 WALL_V = "█"  # vertical wall    (1 char wide)
 CORNER = "█"  # corner           (1 char)
 FLOOR = "  "  # empty cell       (2 chars)
 PATH = "··"  # solution path    (2 chars)
 PATTERN = "██"  # '42' solid cell  (2 chars)
-
 
 class MazeVisualizer:
     """
@@ -122,9 +121,7 @@ class MazeVisualizer:
         self.color_idx = 0
         self.show_path = False
 
-    # ----------------------------------------------------------------
-    # Public methods (called from the interactive loop)
-    # ----------------------------------------------------------------
+    # (called from the interactive loop)
 
     def render(self) -> None:
         """Clear the screen and draw the full maze."""
@@ -142,7 +139,8 @@ class MazeVisualizer:
         self.show_path = not self.show_path
 
     def next_color(self) -> None:
-        """Move to the next colour scheme (cycles back to 0 after the last)."""
+        """Move to the next colour scheme """
+        """(cycles back to 0 after the last)."""
         self.color_idx = (self.color_idx + 1) % len(SCHEMES)
 
     def print_menu(self) -> None:
@@ -156,15 +154,13 @@ class MazeVisualizer:
         print("  4. Quit")
         print("Choice (1-4): ", end="", flush=True)
 
-    # ----------------------------------------------------------------
-    # Private: compute which cells are on the solution path
-    # ----------------------------------------------------------------
+    # compute which cells are on the solution path
 
     def _compute_path_cells(self) -> Set[Tuple[int, int]]:
         """
         Walk self.solution step by step from the entry cell.
         Collect every (row, col) along the way.
-        Returns a set so we can check membership in O(1) while drawing.
+        Returns a set so we can check membership while drawing.
         """
         move = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
         ec, er = self.entry
