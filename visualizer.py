@@ -85,6 +85,7 @@ FLOOR = "  "  # empty cell       (2 chars)
 PATH = "··"  # solution path    (2 chars)
 PATTERN = "██"  # '42' solid cell  (2 chars)
 
+
 class MazeVisualizer:
     """
     Draws the maze in the terminal using ANSI colour codes.
