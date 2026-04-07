@@ -40,7 +40,7 @@ RED = "\033[91m"
 YELLOW = "\033[93m"
 BLUE = "\033[34m"
 
-# ---- 4 colour schemes to cycle through ----
+# 4 colour schemes to cycle through
 # Each scheme is a dict with keys: wall, path, entry, exit, pattern
 SCHEMES = [
     {
