@@ -15,11 +15,10 @@ What this file does (in order):
 import sys
 import random
 
-from config_parser import parse_config, MazeConfig
-from output_writer import write_output
-from visualizer import MazeVisualizer, run_interactive_loop
+from mazegen.config_parser import parse_config, MazeConfig
+from mazegen.output_writer import write_output
+from mazegen.visualizer import MazeVisualizer, run_interactive_loop
 from mazegen import MazeGenerator
-
 
 def build_maze(config: MazeConfig) -> MazeGenerator:
     """

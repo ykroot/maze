@@ -40,7 +40,7 @@ RED = "\033[91m"
 YELLOW = "\033[93m"
 BLUE = "\033[34m"
 
-# 4 colour schemes to cycle through
+# ---- 4 colour schemes to cycle through ----
 # Each scheme is a dict with keys: wall, path, entry, exit, pattern
 SCHEMES = [
     {
@@ -124,7 +124,8 @@ class MazeVisualizer:
 
     def render(self) -> None:
         """Clear the screen and draw the full maze."""
-        print("\033[2J\033[H", end="")  # clear terminal, cursor to top-left
+        sys.stdout.write("\x1b[H\x1b[2J\x1b[3J")
+        sys.stdout.flush()  # clear terminal, cursor to top-left
         scheme = SCHEMES[self.color_idx]
         path_set = self._compute_path_cells() if self.show_path else set()
 

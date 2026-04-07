@@ -5,7 +5,7 @@ CONFIG = config.txt
 .PHONY: install run debug clean lint lint-strict build-pkg
 
 install:
-	pip install flake8 mypy
+	pip install flake8 build mypy
 
 run:
 	PYTHONPATH=. $(PYTHON) $(MAIN) $(CONFIG)
@@ -17,6 +17,8 @@ clean:
 	find . -type d -name __pycache__ | xargs rm -rf
 	find . -type d -name .mypy_cache | xargs rm -rf
 	find . -type d -name "*.egg-info" | xargs rm -rf
+	find . -type d -name "build" | xargs rm -rf
+	find . -type d -name "dist" | xargs rm -rf
 	find . -name "*.pyc" -delete
 
 lint:
@@ -32,5 +34,5 @@ lint-strict:
 	mypy . --strict
 
 build-pkg:
-	cd mazegen && $(PYTHON) setup.py bdist_wheel
-	cp mazegen/dist/mazegen-*.whl .
+	$(PYTHON) -m build --wheel
+	cp dist/*.whl .

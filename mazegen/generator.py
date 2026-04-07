@@ -67,22 +67,27 @@ class MazeGenerator:
             self.has_pattern = False
             return set()
 
+        ex, ey = self.entry
+        xx, xy = self.exit
+        found_spot = False
+        start_row, start_col = 0, 0
+
+        for r in range(1, self.height - 5):
+            for c in range(1, self.width - 7):
+                in_entry = (c <= ex < c + 7) and (r <= ey < r + 5)
+                in_exit = (c <= xx < c + 7) and (r <= xy < r + 5)
+                if not in_entry and not in_exit:
+                    start_row, start_col = r, c
+                    found_spot = True
+                    break
+            if found_spot:
+                break
+
+        if not found_spot:
+            self.has_pattern = False
+            return set()
+
         self.has_pattern = True
-        start_row = (self.height - 5) // 2
-        start_col = (self.width - 7) // 2
-
-        for px, py in [self.entry, self.exit]:
-            if ((start_col <= px < start_col + 7)
-                    and (start_row <= py < start_row + 5)):
-                if py < self.height // 2:
-                    start_row += 2
-                else:
-                    start_row -= 2
-                if px < self.width // 2:
-                    start_col += 2
-                else:
-                    start_col -= 2
-
         pattern_cells: Set[Tuple[int, int]] = set()
 
         for r in range(5):
@@ -90,7 +95,8 @@ class MazeGenerator:
                 pattern_cells.add((start_row + r, start_col))
             if r == 2:
                 pattern_cells.add((start_row + r, start_col + 1))
-            pattern_cells.add((start_row + r, start_col + 2))
+            if r > 1:
+                pattern_cells.add((start_row + r, start_col + 2))
 
         c2 = start_col + 4
         for r in range(5):
