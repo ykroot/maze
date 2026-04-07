@@ -13,6 +13,7 @@ Optional keys:    SEED, ALGORITHM
 import os
 from dataclasses import dataclass
 from typing import Optional, Tuple
+import sys
 
 
 @dataclass
@@ -30,7 +31,6 @@ class MazeConfig:
     output_file: str
     perfect: bool
     seed: Optional[int] = None
-    algorithm: str = "wilson"
 
 
 def parse_config(filepath: str) -> MazeConfig:
@@ -96,9 +96,9 @@ def parse_config(filepath: str) -> MazeConfig:
     if "SEED" in data:
         seed = positive_int(data["SEED"], "SEED", allow_zero=True)
 
-    algorithm = data.get("ALGORITHM", "wilson").lower()
-    if algorithm != "wilson":
-        raise ValueError(f"ALGORITHM must be 'wilson', got: '{algorithm}'")
+    if width > 40 or height > 40:
+        print("Error: Maze size is too large! Maximum is 40x40.")
+        sys.exit(1)
 
     return MazeConfig(
         width=width,
@@ -108,7 +108,6 @@ def parse_config(filepath: str) -> MazeConfig:
         output_file=output_file,
         perfect=perfect,
         seed=seed,
-        algorithm=algorithm,
     )
 
 
