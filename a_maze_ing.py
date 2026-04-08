@@ -133,7 +133,7 @@ def main() -> None:
     # It creates a brand-new maze (with a new random seed)
     # and returns a new viz.
 
-    def regenerate() -> MazeVisualizer:
+    def regenerate(old_viz: MazeVisualizer) -> MazeVisualizer:
         """Generate a new random maze and return a fresh MazeVisualizer."""
         try:
             new_config = MazeConfig(
@@ -148,9 +148,10 @@ def main() -> None:
             new_gen = build_maze(new_config)
             new_viz = make_visualizer(new_gen, new_config)
             new_viz.color_idx = (
-                viz.color_idx
+                old_viz.color_idx
             )  # keep the colour the user chose
-            new_viz.show_path = viz.show_path  # keep path visibility
+            new_viz.show_path = old_viz.show_path  # keep path visibility
+            new_viz.animate = old_viz.animate  # keep user animation choice
             return new_viz
         except Exception as err:
             print(f"\nError during regeneration: {err}", file=sys.stderr)

@@ -28,6 +28,7 @@ Format:  \033[<code>m   (everything after this is coloured)
 Example: \033[92m Hello \033[0m   →  prints "Hello" in bright green
 """
 
+import time
 import sys
 from typing import List, Tuple, Set, Callable
 
@@ -41,7 +42,7 @@ RED = "\033[91m"
 YELLOW = "\033[93m"
 BLUE = "\033[34m"
 
-# ---- 4 colour schemes to cycle through ----
+# 4 colour schemes to cycle through
 # Each scheme is a dict with keys: wall, path, entry, exit, pattern
 SCHEMES = [
     {
@@ -122,8 +123,9 @@ class MazeVisualizer:
         self.pattern_cells = pattern_cells
         self.color_idx = 0
         self.show_path = False
+        self.animate = True  # Default On
 
-    def render(self) -> None:
+    def render(self, choice: int) -> None:
         """Clear the screen and draw the full maze."""
         sys.stdout.write("\x1b[H\x1b[2J\x1b[3J")
         sys.stdout.flush()  # clear terminal, cursor to top-left
@@ -133,11 +135,17 @@ class MazeVisualizer:
         for row in range(self.height):
             self._draw_top_border(row, scheme)
             self._draw_cell_row(row, scheme, path_set)
+            if choice != 2 and self.animate:
+                time.sleep(0.2)
         self._draw_bottom_border(scheme)
 
     def toggle_path(self) -> None:
         """Switch the solution path on or off."""
         self.show_path = not self.show_path
+
+    def toggle_animation(self) -> None:
+        """Toggle the maze animation"""
+        self.animate = not self.animate
 
     def next_color(self) -> None:
         """Move to the next colour scheme """
@@ -147,13 +155,17 @@ class MazeVisualizer:
     def print_menu(self) -> None:
         """Print the interactive menu below the maze."""
         path_status = "ON" if self.show_path else "OFF"
+        anim_status = "ON" if self.animate else "OFF"
         scheme_name = SCHEMES[self.color_idx]["name"]
         print(f"\n{BOLD}==== A-Maze-ing ===={RESET}")
         print("  1. Re-generate a new maze")
-        print(f"  2. Show / Hide solution path  (currently: {path_status})")
+        status_color = GREEN if self.show_path else RED
+        print("  2. Toggle solution path  ", end="")
+        print(f"({status_color}{path_status}{RESET})")
         print(f"  3. Change wall colour         (currently: {scheme_name})")
-        print("  4. Quit")
-        print("Choice (1-4): ", end="", flush=True)
+        print(f"  4. Show/Hide animation       (currently: {anim_status})")
+        print("  5. Quit")
+        print("Choice (1-5): ", end="", flush=True)
 
     # compute which cells are on the solution path
 
@@ -180,6 +192,9 @@ class MazeVisualizer:
         """Return True if the wall at `bit`
         position is closed for cell (row,col)."""
         return bool(self.grid[row][col] & (1 << bit))
+
+    #  Draw the horizontal line that sits above all cells in this row
+    #  It shows the North walls of every cell in the row
 
     def _draw_top_border(self, row: int, scheme: dict[str, str]) -> None:
         """
@@ -270,7 +285,7 @@ class MazeVisualizer:
 
 def run_interactive_loop(
     viz: MazeVisualizer,
-    regenerate: Callable[[], MazeVisualizer],
+    regenerate: Callable[[MazeVisualizer], MazeVisualizer],
 ) -> None:
     """
     Show the maze and the menu. Wait for user input in a loop.
@@ -281,7 +296,7 @@ def run_interactive_loop(
         regenerate : a function with no arguments that returns a brand-new
                      MazeVisualizer (called when the user presses 1)
     """
-    viz.render()
+    viz.render(1)
     viz.print_menu()
 
     while True:
@@ -292,23 +307,28 @@ def run_interactive_loop(
             sys.exit(0)
 
         if choice == "1":
-            viz = regenerate()
-            viz.render()
+            viz = regenerate(viz)
+            viz.render(1)
             viz.print_menu()
 
         elif choice == "2":
             viz.toggle_path()
-            viz.render()
+            viz.render(2)
             viz.print_menu()
 
         elif choice == "3":
             viz.next_color()
-            viz.render()
+            viz.render(3)
             viz.print_menu()
 
         elif choice == "4":
+            viz.toggle_animation()
+            viz.render(4)
+            viz.print_menu()
+
+        elif choice == "5":
             print(f"\n{GREEN}Goodbye!{RESET}")
             sys.exit(0)
 
         else:
-            print("Please enter 1, 2, 3 or 4: ", end="", flush=True)
+            print("Please enter 1, 2, 3, 4 or 5: ", end="", flush=True)
