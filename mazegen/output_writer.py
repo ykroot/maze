@@ -1,3 +1,4 @@
+# mazegen/output_writer.py
 """
 output_writer.py - Write the finished maze to a file.
 

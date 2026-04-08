@@ -1,3 +1,4 @@
+# mazegen/config_parser.py
 """
 config_parser.py - Read and validate the maze configuration file.
 
@@ -13,7 +14,6 @@ Optional keys:    SEED, ALGORITHM
 import os
 from dataclasses import dataclass
 from typing import Optional, Tuple
-import sys
 
 
 @dataclass
@@ -31,6 +31,7 @@ class MazeConfig:
     output_file: str
     perfect: bool
     seed: Optional[int] = None
+    loop_percent: int = 5
 
 
 def parse_config(filepath: str) -> MazeConfig:
@@ -97,8 +98,15 @@ def parse_config(filepath: str) -> MazeConfig:
         seed = positive_int(data["SEED"], "SEED", allow_zero=True)
 
     if width > 40 or height > 40:
-        print("Error: Maze size is too large! Maximum is 40x40.")
-        sys.exit(1)
+        raise ValueError("Maze size is too large! Maximum is 40x40.")
+
+    if "LOOP_PERCENT" in data and not perfect:
+        loop_percent = positive_int(data["LOOP_PERCENT"], "LOOP_PERCENT")
+        if not (1 <= loop_percent <= 50):
+            raise ValueError(
+                "LOOP_PERCENT must be between 1 and 50, "
+                f"got: {loop_percent}"
+            )
 
     return MazeConfig(
         width=width,
@@ -108,6 +116,7 @@ def parse_config(filepath: str) -> MazeConfig:
         output_file=output_file,
         perfect=perfect,
         seed=seed,
+        loop_percent=loop_percent,
     )
 
 

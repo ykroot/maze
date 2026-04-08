@@ -1,3 +1,4 @@
+# mazegen/visualizer.py
 """
 visualizer.py - Draw the maze in the terminal and handle the interactive menu.
 

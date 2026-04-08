@@ -20,6 +20,7 @@ from mazegen.output_writer import write_output
 from mazegen.visualizer import MazeVisualizer, run_interactive_loop
 from mazegen import MazeGenerator
 
+
 def build_maze(config: MazeConfig) -> MazeGenerator:
     """
     Create a MazeGenerator from the config settings and run it.
@@ -37,12 +38,20 @@ def build_maze(config: MazeConfig) -> MazeGenerator:
         config.seed if config.seed is not None else random.randint(0, 2**31)
     )
 
-    gen = MazeGenerator(w=config.width, h=config.height, seed=seed)
-    gen.generate(
-        perfect=config.perfect,
-        entry=config.entry,
-        exit_coord=config.exit_coord,
-    )
+    try:
+        gen = MazeGenerator(w=config.width,
+                            h=config.height,
+                            seed=seed,
+                            loop_percent=config.loop_percent,
+                            )
+        gen.generate(
+            perfect=config.perfect,
+            entry=config.entry,
+            exit_coord=config.exit_coord,
+        )
+    except (ValueError, OSError) as err:
+        print(f"Error: {err}", file=sys.stderr)
+        sys.exit(1)
 
     # Warn the user if the maze was too small for the '42' pattern
     if not gen.has_pattern:
@@ -88,6 +97,7 @@ def make_visualizer(gen: MazeGenerator, config: MazeConfig) -> MazeVisualizer:
         exit_coord=gen.exit,
         solution=gen.solution,
         pattern_cells=gen.pattern_cells,
+        stats=gen.get_stats(),
     )
 
 
@@ -134,7 +144,6 @@ def main() -> None:
                 output_file=config.output_file,
                 perfect=config.perfect,
                 seed=None,  # None = pick a new random seed
-                algorithm=config.algorithm,
             )
             new_gen = build_maze(new_config)
             new_viz = make_visualizer(new_gen, new_config)

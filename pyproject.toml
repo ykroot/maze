@@ -6,5 +6,11 @@ build-backend = "setuptools.build_meta"
 name = "mazegen"
 version = "1.0.0"
 description = "A maze generation and solving module"
-authors = [{name = "Student B"}]
 requires-python = ">=3.10"
+authors = [
+    {name = "ysenhaji", email = "ysenhaji@student.1337.ma"},
+    {name = "mouaguil", email = "mouaguil@student.1337.ma"},
+]
+
+[tool.setuptools.package-data]
+mazegen = ["README.md"]

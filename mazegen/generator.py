@@ -5,7 +5,13 @@ from typing import List, Tuple, Set, Dict
 
 class MazeGenerator:
     """A class to generate and solve mazes."""
-    def __init__(self, w: int, h: int, seed: int):
+    def __init__(self, w: int, h: int, seed: int, loop_percent: int = 5):
+        if (w <= 0):
+            raise ValueError("width must be a positive integer (> 0),"
+                             f" got: {w}")
+        if (h <= 0):
+            raise ValueError("heigth must be a positive integer (> 0),"
+                             f" got: {h}")
         self.width: int = w
         self.height: int = h
         self.seed: int = seed
@@ -24,9 +30,25 @@ class MazeGenerator:
             'S': (0, 1, 4, 1),
             'W': (-1, 0, 8, 2)
         }
+        self.loop_percent = loop_percent
 
     def generate(self, perfect: bool, entry: Tuple[int, int],
                  exit_coord: Tuple[int, int]) -> None:
+        if entry == exit_coord:
+            raise ValueError("ENTRY and EXIT must be different cells.")
+        if not (0 <= entry[0] < self.width and 0 <= entry[1] < self.height):
+            raise ValueError(
+                f"'ENTRY' {entry} is outside the maze "
+                f"(valid range: col 0-{self.width - 1},"
+                f" row 0-{self.height - 1})."
+            )
+        if not (0 <= exit_coord[0] < self.width
+                and 0 <= exit_coord[1] < self.height):
+            raise ValueError(
+                f"'EXIT' {exit_coord} is outside the maze "
+                f"(valid range: col 0-{self.width - 1},"
+                f" row 0-{self.height - 1})."
+            )
         self.entry = entry
         self.exit = exit_coord
 
@@ -120,7 +142,7 @@ class MazeGenerator:
                     walls.append((x, y, 'S'))
 
         random.shuffle(walls)
-        target = int((self.width * self.height) * 0.05)
+        target = int((self.width * self.height) * (self.loop_percent / 100))
         broken = 0
         for x, y, d in walls:
             if broken >= target:
@@ -180,3 +202,21 @@ class MazeGenerator:
 
     def to_hex_grid(self) -> List[str]:
         return ["".join(f"{c:X}" for c in row) for row in self.grid]
+
+    def get_stats(self) -> dict:
+        dead_ends = 0
+        junctions = 0
+        for row in self.grid:
+            for cell in row:
+                open_passages = bin(~cell & 0xF).count('1')
+                if open_passages == 1:
+                    dead_ends += 1
+                elif open_passages >= 3:
+                    junctions += 1
+        return {
+            "dead_ends": dead_ends,
+            "junctions": junctions,
+            "loop_percent": self.loop_percent,
+            "path_length": len(self.solution),
+            "seed": self.seed,
+        }
