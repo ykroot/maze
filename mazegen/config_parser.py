@@ -32,6 +32,7 @@ class MazeConfig:
     perfect: bool
     seed: Optional[int] = None
     loop_percent: int = 5
+    load_file: Optional[str] = None
 
 
 def parse_config(filepath: str) -> MazeConfig:
@@ -100,13 +101,21 @@ def parse_config(filepath: str) -> MazeConfig:
     if width > 40 or height > 40:
         raise ValueError("Maze size is too large! Maximum is 40x40.")
 
-    if "LOOP_PERCENT" in data and not perfect:
+    loop_percent: int = 5
+
+    if perfect:
+        loop_percent = 0
+    elif "LOOP_PERCENT" in data:
         loop_percent = positive_int(data["LOOP_PERCENT"], "LOOP_PERCENT")
         if not (1 <= loop_percent <= 50):
             raise ValueError(
                 "LOOP_PERCENT must be between 1 and 50, "
                 f"got: {loop_percent}"
             )
+
+    load_file: Optional[str] = None
+    if "LOAD_FILE" in data:
+        load_file = data["LOAD_FILE"]
 
     return MazeConfig(
         width=width,
@@ -117,6 +126,7 @@ def parse_config(filepath: str) -> MazeConfig:
         perfect=perfect,
         seed=seed,
         loop_percent=loop_percent,
+        load_file=load_file
     )
 
 

@@ -91,19 +91,28 @@ class MazeGenerator:
 
         ex, ey = self.entry
         xx, xy = self.exit
-        found_spot = False
-        start_row, start_col = 0, 0
+        found_spot = True
+        start_row, start_col = (self.height - 5) // 2, (self.width - 7) // 2
 
-        for r in range(1, self.height - 5):
-            for c in range(1, self.width - 7):
-                in_entry = (c <= ex < c + 7) and (r <= ey < r + 5)
-                in_exit = (c <= xx < c + 7) and (r <= xy < r + 5)
-                if not in_entry and not in_exit:
-                    start_row, start_col = r, c
-                    found_spot = True
+        in_entry = ((start_col <= ex < start_col + 7)
+                    and (start_row <= ey < start_row + 5)
+                    )
+        in_exit = ((start_col <= xx < start_col + 7)
+                   and (start_row <= xy < start_row + 5)
+                   )
+
+        if in_entry or in_exit:
+            found_spot = False
+            for r in range(1, self.height - 5):
+                for c in range(1, self.width - 7):
+                    in_entry = (c <= ex < c + 7) and (r <= ey < r + 5)
+                    in_exit = (c <= xx < c + 7) and (r <= xy < r + 5)
+                    if not in_entry and not in_exit:
+                        start_row, start_col = r, c
+                        found_spot = True
+                        break
+                if found_spot:
                     break
-            if found_spot:
-                break
 
         if not found_spot:
             self.has_pattern = False
@@ -203,7 +212,7 @@ class MazeGenerator:
     def to_hex_grid(self) -> List[str]:
         return ["".join(f"{c:X}" for c in row) for row in self.grid]
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, int | bool]:
         dead_ends = 0
         junctions = 0
         for row in self.grid:
@@ -219,4 +228,5 @@ class MazeGenerator:
             "loop_percent": self.loop_percent,
             "path_length": len(self.solution),
             "seed": self.seed,
+            "has_pattern": self.has_pattern,
         }

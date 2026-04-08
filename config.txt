@@ -2,12 +2,16 @@
 # Lines starting with # are comments and are ignored.
 # Format: KEY=VALUE (one per line, no spaces around the =)
 
-WIDTH=19
-HEIGHT=10
-ENTRY=18,8
-EXIT=0,0
+WIDTH=20
+HEIGHT=20
+ENTRY=1,3
+EXIT=3,1
 OUTPUT_FILE=maze.txt
 PERFECT=false
+LOAD_FILE=saved_mazes/maze_1775651791.txt
 
+LOOP_PERCENT=1
 # Uncomment the line below to always get the same maze (reproducible).
 # SEED=42
+
+

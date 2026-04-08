@@ -28,8 +28,8 @@ Format:  \033[<code>m   (everything after this is coloured)
 Example: \033[92m Hello \033[0m   →  prints "Hello" in bright green
 """
 
-import time
 import sys
+import time
 from typing import List, Tuple, Set, Callable
 
 #  ANSI codes
@@ -42,7 +42,7 @@ RED = "\033[91m"
 YELLOW = "\033[93m"
 BLUE = "\033[34m"
 
-# 4 colour schemes to cycle through
+# ---- 4 colour schemes to cycle through ----
 # Each scheme is a dict with keys: wall, path, entry, exit, pattern
 SCHEMES = [
     {
@@ -113,6 +113,7 @@ class MazeVisualizer:
         exit_coord: Tuple[int, int],
         solution: str,
         pattern_cells: Set[Tuple[int, int]],
+        stats: dict[str, int | bool],
     ) -> None:
         self.grid = grid
         self.width = width
@@ -123,9 +124,10 @@ class MazeVisualizer:
         self.pattern_cells = pattern_cells
         self.color_idx = 0
         self.show_path = False
-        self.animate = True  # Default On
+        self.stats = stats
+        self.animate = True
 
-    def render(self, choice: int) -> None:
+    def render(self, choice: int = 1) -> None:
         """Clear the screen and draw the full maze."""
         sys.stdout.write("\x1b[H\x1b[2J\x1b[3J")
         sys.stdout.flush()  # clear terminal, cursor to top-left
@@ -136,8 +138,9 @@ class MazeVisualizer:
             self._draw_top_border(row, scheme)
             self._draw_cell_row(row, scheme, path_set)
             if choice != 2 and self.animate:
-                time.sleep(0.2)
+                time.sleep(0.1)
         self._draw_bottom_border(scheme)
+        self.print_stats()
 
     def toggle_path(self) -> None:
         """Switch the solution path on or off."""
@@ -152,19 +155,23 @@ class MazeVisualizer:
         """(cycles back to 0 after the last)."""
         self.color_idx = (self.color_idx + 1) % len(SCHEMES)
 
-    def print_menu(self) -> None:
+    def print_menu(self, message: str = "") -> None:
         """Print the interactive menu below the maze."""
         path_status = "ON" if self.show_path else "OFF"
         anim_status = "ON" if self.animate else "OFF"
+        status_color = GREEN if self.show_path else RED
         scheme_name = SCHEMES[self.color_idx]["name"]
         print(f"\n{BOLD}==== A-Maze-ing ===={RESET}")
         print("  1. Re-generate a new maze")
-        status_color = GREEN if self.show_path else RED
-        print("  2. Toggle solution path  ", end="")
-        print(f"({status_color}{path_status}{RESET})")
+        print("  2. Toggle solution path "
+              f"({status_color}{path_status}{RESET})")
         print(f"  3. Change wall colour         (currently: {scheme_name})")
         print(f"  4. Show/Hide animation       (currently: {anim_status})")
         print("  5. Quit")
+        print("  load. Load maze from file")
+        print("  save. Save current maze")
+        if message:
+            print(f"\n{RED}{message}{RESET}")
         print("Choice (1-5): ", end="", flush=True)
 
     # compute which cells are on the solution path
@@ -192,9 +199,6 @@ class MazeVisualizer:
         """Return True if the wall at `bit`
         position is closed for cell (row,col)."""
         return bool(self.grid[row][col] & (1 << bit))
-
-    #  Draw the horizontal line that sits above all cells in this row
-    #  It shows the North walls of every cell in the row
 
     def _draw_top_border(self, row: int, scheme: dict[str, str]) -> None:
         """
@@ -280,12 +284,40 @@ class MazeVisualizer:
         line += w + CORNER + RESET
         print(line)
 
+    def print_stats(self) -> None:
+        """Display a stats bar below the maze."""
+        s = self.stats
+        loop_info = (
+            f"Loops: {CYAN}{s['loop_percent']}%{RESET}{BOLD}"
+            if s['loop_percent'] > 0
+            else "Perfect"
+        )
+        pattern_info = (
+            f"{GREEN}Yes{RESET}{BOLD}"
+            if s['has_pattern']
+            else f"{RED}No{RESET}{BOLD}"
+        )
+        print(
+            f"{BOLD}"
+            f"  {self.width}x{self.height}  |  "
+            f"Seed: {CYAN}{s['seed']}{RESET}{BOLD}  |  "
+            f"Path: {CYAN}{s['path_length']} steps{RESET}{BOLD}  |  "
+            f"Dead ends: {CYAN}{s['dead_ends']}{RESET}{BOLD}  |  "
+            f"Junctions: {CYAN}{s['junctions']}{RESET}{BOLD}  |  "
+            f"{loop_info}  |  "
+            f"Pattern: {pattern_info}"
+            f"{RESET}"
+        )
+
 
 # Interactive loop (called from a_maze_ing.py)
 
 def run_interactive_loop(
     viz: MazeVisualizer,
     regenerate: Callable[[MazeVisualizer], MazeVisualizer],
+    load: Callable[[MazeVisualizer], MazeVisualizer],
+    save: Callable[[MazeVisualizer], str],
+    message: str = "",
 ) -> None:
     """
     Show the maze and the menu. Wait for user input in a loop.
@@ -296,8 +328,8 @@ def run_interactive_loop(
         regenerate : a function with no arguments that returns a brand-new
                      MazeVisualizer (called when the user presses 1)
     """
-    viz.render(1)
-    viz.print_menu()
+    viz.render()
+    viz.print_menu(message)
 
     while True:
         try:
@@ -306,29 +338,52 @@ def run_interactive_loop(
             print(f"\n{GREEN}Goodbye!{RESET}")
             sys.exit(0)
 
+        message = ""
+
         if choice == "1":
             viz = regenerate(viz)
-            viz.render(1)
-            viz.print_menu()
+            viz.render()
+            viz.print_menu(message)
 
         elif choice == "2":
             viz.toggle_path()
             viz.render(2)
-            viz.print_menu()
+            viz.print_menu(message)
 
         elif choice == "3":
             viz.next_color()
-            viz.render(3)
-            viz.print_menu()
+            viz.render()
+            viz.print_menu(message)
 
         elif choice == "4":
             viz.toggle_animation()
-            viz.render(4)
-            viz.print_menu()
+            viz.render()
+            viz.print_menu(message)
 
         elif choice == "5":
             print(f"\n{GREEN}Goodbye!{RESET}")
             sys.exit(0)
+
+        elif choice == "load":
+            try:
+                viz = load(viz)
+                viz.render()
+                viz.print_menu(message)
+            except (FileNotFoundError, ValueError) as err:
+                message = f"Load error: {err}"
+                viz.render()
+                viz.print_menu(message)
+
+        elif choice == "save":
+            try:
+                filepath = save(viz)
+                message = f"Saved to {filepath}"
+                viz.render()
+                viz.print_menu(message)
+            except OSError as err:
+                message = f"Save error: {err}"
+                viz.render()
+                viz.print_menu(message)
 
         else:
             print("Please enter 1, 2, 3, 4 or 5: ", end="", flush=True)

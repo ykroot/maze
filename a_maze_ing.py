@@ -14,6 +14,7 @@ What this file does (in order):
 
 import sys
 import random
+import os
 
 from mazegen.config_parser import parse_config, MazeConfig
 from mazegen.output_writer import write_output
@@ -101,6 +102,129 @@ def make_visualizer(gen: MazeGenerator, config: MazeConfig) -> MazeVisualizer:
     )
 
 
+def load_maze(filepath: str, old_viz: MazeVisualizer) -> MazeVisualizer:
+    """
+    Read a maze file and return a MazeVisualizer.
+
+    Args:
+        filepath : path to the maze file to load
+        config   : current config (used for width and height)
+
+    Returns:
+        A MazeVisualizer ready to display the loaded maze.
+
+    Raises:
+        FileNotFoundError : if the file does not exist
+        ValueError        : if the file format is invalid
+    """
+    if not os.path.isfile(filepath):
+        raise FileNotFoundError(f"Maze file not found: '{filepath}'")
+
+    with open(filepath, "r") as fh:
+        lines = fh.read().splitlines()
+
+    # find the empty line that separates grid from metadata
+    try:
+        sep = lines.index("")
+    except ValueError:
+        raise ValueError("Invalid maze file: "
+                         "missing empty separator line.")
+
+    hex_rows = lines[:sep]
+    meta = lines[sep + 1:]
+
+    if len(meta) < 3:
+        raise ValueError("Invalid maze file: missing entry,"
+                         " exit or solution.")
+
+    # rebuild grid
+    try:
+        grid = [[int(c, 16) for c in row] for row in hex_rows]
+    except ValueError:
+        raise ValueError("Invalid maze file: grid contains"
+                         " non-hex characters.")
+
+    height = len(grid)
+    if height == 0:
+        raise ValueError("Invalid maze file: empty grid.")
+    width = len(grid[0])
+
+    # parse entry and exit
+    try:
+        ec, er = map(int, meta[0].split(","))
+        xc, xr = map(int, meta[1].split(","))
+    except ValueError:
+        raise ValueError("Invalid maze file: bad entry or exit format.")
+
+    solution = meta[2]
+
+    dead_ends = 0
+    junctions = 0
+    for row in grid:
+        for cell in row:
+            open_passages = bin(~cell & 0xF).count('1')
+            if open_passages == 1:
+                dead_ends += 1
+            elif open_passages >= 3:
+                junctions += 1
+
+    new_viz = MazeVisualizer(
+            grid=grid,
+            width=width,
+            height=height,
+            entry=(ec, er),
+            exit_coord=(xc, xr),
+            solution=solution,
+            pattern_cells=set(),     # no pattern cells when loading
+            stats={
+                "dead_ends": dead_ends,
+                "junctions": junctions,
+                "loop_percent": 0,
+                "path_length": len(solution),
+                "seed": 0,
+                "has_pattern": False,
+            },
+        )
+    new_viz.color_idx = old_viz.color_idx
+    new_viz.show_path = old_viz.show_path
+    new_viz.animate = old_viz.animate
+
+    return new_viz
+
+
+def save_maze(viz: MazeVisualizer) -> str:
+    """
+    Save the current maze to saved_mazes/ with a timestamp.
+
+    Args:
+        viz : the current MazeVisualizer
+
+    Returns:
+        The path of the saved file.
+
+    Raises:
+        OSError : if the file cannot be written
+    """
+    import time
+    os.makedirs("saved_mazes", exist_ok=True)
+    filepath = f"saved_mazes/maze_{int(time.time())}.txt"
+
+    hex_rows = [
+        "".join(f"{cell:X}" for cell in row)
+        for row in viz.grid
+    ]
+
+    write_output(
+        filepath=filepath,
+        hex_rows=hex_rows,
+        entry=viz.entry,
+        exit_coord=viz.exit_coord,
+        solution=viz.solution,
+    )
+
+    return filepath
+
+
 def main() -> None:
     """
     Entry point: parse arguments, generate maze, display it.
@@ -144,6 +268,7 @@ def main() -> None:
                 output_file=config.output_file,
                 perfect=config.perfect,
                 seed=None,  # None = pick a new random seed
+                loop_percent=config.loop_percent,
             )
             new_gen = build_maze(new_config)
             new_viz = make_visualizer(new_gen, new_config)
@@ -157,7 +282,16 @@ def main() -> None:
             print(f"\nError during regeneration: {err}", file=sys.stderr)
             return viz  # on error, keep showing the current maze
 
-    run_interactive_loop(viz, regenerate)
+    def do_load(old_viz: MazeVisualizer) -> MazeVisualizer:
+        if config.load_file is None:
+            raise ValueError("No LOAD_FILE defined in config.")
+        return load_maze(config.load_file, old_viz)
+
+    run_interactive_loop(viz,
+                         regenerate,
+                         load=do_load,
+                         save=save_maze,
+                         )
 
 
 if __name__ == "__main__":
